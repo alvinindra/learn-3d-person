@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/immutability */
 "use client";
 
 import { useRef, useEffect } from "react";
@@ -5,15 +6,31 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
 
-export function Person() {
+interface PersonProps {
+  color?: string | null;
+}
+
+export function Person({ color }: PersonProps) {
   const group = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF("/person.glb");
   const { actions, names } = useAnimations(animations, group);
 
+  // Apply color change
   useEffect(() => {
-    // Log available animations for debugging
-    console.log("Available animations:", names);
+    scene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        const material = mesh.material as THREE.MeshStandardMaterial;
+        if (color) {
+          material.color.set(color);
+        } else {
+          material.color.set("white");
+        }
+      }
+    });
+  }, [color, scene]);
 
+  useEffect(() => {
     if (names.length > 0) {
       const walkAnimationName = names.find(
         (name) => name.toLowerCase().includes("walk")
@@ -23,8 +40,7 @@ export function Person() {
       if (action) {
         action.reset().fadeIn(0.5).play();
         action.setLoop(THREE.LoopRepeat, Infinity);
-        // eslint-disable-next-line react-hooks/immutability
-        action.timeScale = 0.8; // Slower for walking effect
+        action.timeScale = 0.8;
       }
     }
 
@@ -39,18 +55,17 @@ export function Person() {
   // Subtle walking motion
   useFrame((state) => {
     if (group.current) {
-      // Gentle bob for walking feel
-      group.current.position.y = Math.sin(state.clock.elapsedTime * 4) * 0.01 - 1.2;
+      const bob = Math.sin(state.clock.elapsedTime * 4) * 0.01;
+      group.current.position.y = -1.5 + bob;
     }
   });
 
   return (
-    <group ref={group} dispose={null}>
+    <group ref={group} dispose={null} position={[0, -1.5, 0]}>
       <primitive
         object={scene}
         scale={0.6}
-        position={[0, -0.5, 0]}
-        rotation={[0, 45, 0]}
+        rotation={[0, Math.PI / 2, 0]}
       />
     </group>
   );

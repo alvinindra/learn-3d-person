@@ -8,6 +8,10 @@ import {
 } from "@react-three/drei";
 import { Person } from "./Person";
 
+interface SceneProps {
+  personColor?: string | null;
+}
+
 function LoadingFallback() {
   return (
     <mesh>
@@ -17,10 +21,10 @@ function LoadingFallback() {
   );
 }
 
-export function Scene() {
+export function Scene({ personColor }: SceneProps) {
   return (
     <Canvas
-      camera={{ position: [0, 1, 4], fov: 50 }}
+      camera={{ position: [0, 0.5, 5], fov: 45 }}
       shadows
       className="touch-none"
       gl={{ antialias: true, alpha: true }}
@@ -41,12 +45,12 @@ export function Scene() {
 
       {/* 3D Person Model */}
       <Suspense fallback={<LoadingFallback />}>
-        <Person />
+        <Person color={personColor} />
       </Suspense>
 
       {/* Ground shadow */}
       <ContactShadows
-        position={[0, -1.7, 0]}
+        position={[0, -1.5, 0]}
         opacity={0.3}
         scale={10}
         blur={2.5}
@@ -60,8 +64,7 @@ export function Scene() {
         enableZoom={false}
         minPolarAngle={Math.PI / 4}
         maxPolarAngle={Math.PI / 2}
-        autoRotate
-        autoRotateSpeed={0.5}
+        autoRotate={false}
       />
     </Canvas>
   );
