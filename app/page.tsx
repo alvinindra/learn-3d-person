@@ -19,6 +19,12 @@ const showcases = [
     subtitle: "Say Hello",
     href: "/waving",
   },
+  {
+    id: "jumping",
+    title: "JUMPING",
+    subtitle: "Scroll to Jump",
+    href: "/jumping",
+  },
 ];
 
 export default function Home() {
