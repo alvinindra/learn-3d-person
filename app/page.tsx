@@ -1,83 +1,43 @@
-"use client";
+import Link from "next/link";
 
-import dynamic from "next/dynamic";
-import { useState } from "react";
-
-// Dynamically import Scene to avoid SSR issues with Three.js
-const Scene = dynamic(
-  () => import("./components/Scene").then((mod) => mod.Scene),
+const showcases = [
   {
-    ssr: false,
-    loading: () => (
-      <div className="flex h-full w-full items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-2 border-black border-t-transparent" />
-          <p className="text-sm text-neutral-500 animate-pulse">Loading...</p>
-        </div>
-      </div>
-    ),
-  }
-);
+    id: "walking",
+    title: "WALKING",
+    subtitle: "Keep Moving",
+    href: "/walking",
+  },
+];
 
 export default function Home() {
-  const [color, setColor] = useState<string | null>(null);
-
-  const colors = [
-    { name: "Default", value: null, bg: "bg-neutral-200" },
-    { name: "Red", value: "#ef4444", bg: "bg-red-500" },
-    { name: "Blue", value: "#3b82f6", bg: "bg-blue-500" },
-    { name: "Green", value: "#22c55e", bg: "bg-green-500" },
-    { name: "Yellow", value: "#eab308", bg: "bg-yellow-500" },
-    { name: "Black", value: "#171717", bg: "bg-neutral-900" },
-  ];
-
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-white">
       {/* Subtle grid pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-size-[60px_60px]" />
 
-      {/* Floating Color Picker - Right Side Vertical */}
-      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-2 rounded-full border border-neutral-200 bg-white/90 px-3 py-4 shadow-lg backdrop-blur-sm">
-        {colors.map((c) => (
-          <button
-            key={c.name}
-            onClick={() => setColor(c.value)}
-            className={`h-7 w-7 rounded-full border-2 transition-all hover:scale-110 ${color === c.value
-              ? "border-black scale-110"
-              : "border-transparent"
-              } ${c.bg}`}
-            title={c.name}
-          />
-        ))}
-      </div>
-
       {/* Main content */}
-      <main className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4">
-        {/* Title Section */}
-        <div className="mb-4 text-center">
-          <h1 className="text-7xl md:text-9xl font-black tracking-tighter text-black">
-            WALKING
+      <main className="relative z-10 min-h-screen px-6 py-20 md:px-12 lg:px-20">
+        {/* Header */}
+        <div className="mb-16 md:mb-24">
+          <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-black">
+            3D SHOWCASE
           </h1>
-          <p className="mt-2 text-sm md:text-base text-neutral-400 font-light tracking-[0.3em] uppercase">
-            Keep Moving
+          <p className="mt-3 text-sm md:text-base text-neutral-400 font-light tracking-[0.3em] uppercase">
+            Interactive Experiments
           </p>
         </div>
 
-        {/* 3D Canvas Container */}
-        <div className="relative h-[55vh] md:h-[60vh] w-full max-w-3xl">
-          {/* Minimal decorative circle */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="h-64 w-64 md:h-80 md:w-80 rounded-full border border-neutral-200" />
-          </div>
-
-          {/* 3D Scene */}
-          <Scene personColor={color} />
+        {/* Showcase Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {showcases.map((showcase) => (
+            <ShowcaseCard key={showcase.id} {...showcase} />
+          ))}
         </div>
 
         {/* Stats Section */}
-        <div className="mt-4 flex flex-wrap justify-center gap-12 md:gap-20 opacity-50">
-          <StatCard value="∞" label="Distance" />
-          <StatCard value="100%" label="Focus" />
+        <div className="mt-20 flex flex-wrap gap-12 md:gap-20 opacity-50">
+          <StatCard value={showcases.length.toString()} label="Showcases" />
+          <StatCard value="∞" label="Possibilities" />
         </div>
       </main>
 
@@ -87,12 +47,65 @@ export default function Home() {
   );
 }
 
+function ShowcaseCard({
+  title,
+  subtitle,
+  href,
+}: {
+  title: string;
+  subtitle: string;
+  href: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group relative block aspect-4/3 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-6 transition-all hover:border-neutral-300 hover:shadow-lg"
+    >
+      {/* Decorative circle */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
+        <div className="h-32 w-32 rounded-full border border-neutral-200 group-hover:border-neutral-300 transition-colors" />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 flex h-full flex-col justify-between">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-black tracking-tighter text-black group-hover:text-neutral-700 transition-colors">
+            {title}
+          </h2>
+          <p className="mt-1 text-[10px] md:text-xs text-neutral-400 font-light tracking-[0.2em] uppercase">
+            {subtitle}
+          </p>
+        </div>
+
+        {/* Arrow */}
+        <div className="flex justify-end">
+          <div className="h-10 w-10 rounded-full border border-neutral-200 flex items-center justify-center group-hover:border-black group-hover:bg-black transition-all">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-neutral-400 group-hover:text-white transition-colors"
+            >
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 function StatCard({ value, label }: { value: string; label: string }) {
   return (
-    <div className="text-center">
-      <div className="text-2xl font-bold text-black">
-        {value}
-      </div>
+    <div className="text-left">
+      <div className="text-2xl font-bold text-black">{value}</div>
       <div className="mt-1 text-[10px] text-neutral-400 uppercase tracking-wider">
         {label}
       </div>
