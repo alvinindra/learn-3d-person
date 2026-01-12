@@ -25,6 +25,12 @@ const showcases = [
     subtitle: "Scroll to Jump",
     href: "/jumping",
   },
+  {
+    id: "dancing",
+    title: "DANCING",
+    subtitle: "Rhythmic Groove",
+    href: "/dancing",
+  },
 ];
 
 export default function Home() {
@@ -35,14 +41,23 @@ export default function Home() {
 
       {/* Main content */}
       <main className="relative z-10 min-h-screen px-6 py-20 md:px-12 lg:px-20">
-        {/* Header */}
-        <div className="mb-16 md:mb-24">
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-black">
-            3D SHOWCASE
-          </h1>
-          <p className="mt-3 text-sm md:text-base text-neutral-400 font-light tracking-[0.3em] uppercase">
-            Interactive Experiments
-          </p>
+        {/* Top Header & Stats */}
+        <div className="mb-16 md:mb-24 flex flex-col md:flex-row md:items-end md:justify-between gap-12">
+          {/* Header */}
+          <div>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-black">
+              3D SHOWCASE
+            </h1>
+            <p className="mt-3 text-sm md:text-base text-neutral-400 font-light tracking-[0.3em] uppercase">
+              Interactive Experiments
+            </p>
+          </div>
+
+          {/* Stats Section */}
+          <div className="flex gap-12 md:gap-20 opacity-80 pb-2">
+            <StatCard value={showcases.length.toString()} label="Showcases" />
+            <StatCard value="∞" label="Possibilities" />
+          </div>
         </div>
 
         {/* Showcase Grid */}
@@ -50,12 +65,6 @@ export default function Home() {
           {showcases.map((showcase) => (
             <ShowcaseCard key={showcase.id} {...showcase} />
           ))}
-        </div>
-
-        {/* Stats Section */}
-        <div className="mt-20 flex flex-wrap gap-12 md:gap-20 opacity-50">
-          <StatCard value={showcases.length.toString()} label="Showcases" />
-          <StatCard value="∞" label="Possibilities" />
         </div>
       </main>
 
