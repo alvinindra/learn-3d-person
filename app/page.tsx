@@ -7,6 +7,12 @@ const showcases = [
     subtitle: "Keep Moving",
     href: "/walking",
   },
+  {
+    id: "flying",
+    title: "FLYING",
+    subtitle: "Touch the Sky",
+    href: "/flying",
+  },
 ];
 
 export default function Home() {
