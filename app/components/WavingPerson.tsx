@@ -7,11 +7,11 @@ import { useGLTF, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
 import { SkeletonUtils } from "three-stdlib";
 
-interface PersonProps {
+interface WavingPersonProps {
   color?: string | null;
 }
 
-export function Person({ color }: PersonProps) {
+export function WavingPerson({ color }: WavingPersonProps) {
   const group = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF("/person.glb");
 
@@ -42,16 +42,26 @@ export function Person({ color }: PersonProps) {
     });
   }, [color, clonedScene]);
 
+  // Play the "coucou" waving animation
   useEffect(() => {
     if (names.length > 0) {
-      const walkAnimationName =
-        names.find((name) => name.toLowerCase().includes("walk")) || names[0];
+      // Look for the "coucou" animation (waving)
+      const wavingAnimationName =
+        names.find((name) => name.toLowerCase().includes("coucou")) ||
+        names.find((name) => name.toLowerCase().includes("wave")) ||
+        names[0];
 
-      const action = actions[walkAnimationName];
+      // Debug: log available animations
+      if (process.env.NODE_ENV !== "production") {
+        console.debug("[WavingPerson animations]", names);
+        console.debug("[WavingPerson selected]", wavingAnimationName);
+      }
+
+      const action = actions[wavingAnimationName];
       if (action) {
         action.reset().fadeIn(0.5).play();
         action.setLoop(THREE.LoopRepeat, Infinity);
-        action.timeScale = 0.8;
+        action.timeScale = 1.0;
       }
     }
 
@@ -63,17 +73,22 @@ export function Person({ color }: PersonProps) {
     };
   }, [actions, names]);
 
-  // Subtle walking motion
+  // Subtle idle motion
   useFrame((state) => {
     if (group.current) {
-      const bob = Math.sin(state.clock.elapsedTime * 4) * 0.01;
-      group.current.position.y = -1.5 + bob;
+      // Gentle breathing/swaying motion
+      const sway = Math.sin(state.clock.elapsedTime * 0.8) * 0.02;
+      group.current.rotation.y = Math.PI / 6 + sway;
     }
   });
 
   return (
-    <group ref={group} dispose={null} position={[0, -1.5, 0]}>
-      <primitive object={clonedScene} scale={0.6} rotation={[0, Math.PI / 2, 0]} />
+    <group ref={group} dispose={null} position={[0, -1, 0]}>
+      <primitive
+        object={clonedScene}
+        scale={0.4}
+        rotation={[0, -20, 0]}
+      />
     </group>
   );
 }

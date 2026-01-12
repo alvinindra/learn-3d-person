@@ -13,6 +13,12 @@ const showcases = [
     subtitle: "Touch the Sky",
     href: "/flying",
   },
+  {
+    id: "waving",
+    title: "WAVING",
+    subtitle: "Say Hello",
+    href: "/waving",
+  },
 ];
 
 export default function Home() {
