@@ -40,7 +40,14 @@ const learningGroups = [
   {
     month: "February",
     title: "3D Basics",
-    items: [],
+    items: [
+      {
+        id: "3d-basics",
+        title: "3D BASICS",
+        subtitle: "Master the Fundamentals",
+        href: "/3d-basics",
+      },
+    ],
   },
 ];
 
@@ -89,9 +96,16 @@ export default function Home() {
               </div>
 
               {group.items.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className={`grid gap-6 ${group.items.length === 1
+                  ? 'grid-cols-1'
+                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                  }`}>
                   {group.items.map((item) => (
-                    <ShowcaseCard key={item.id} {...item} />
+                    <ShowcaseCard
+                      key={item.id}
+                      {...item}
+                      fullWidth={group.items.length === 1}
+                    />
                   ))}
                 </div>
               ) : (
@@ -114,15 +128,18 @@ function ShowcaseCard({
   title,
   subtitle,
   href,
+  fullWidth = false,
 }: {
   title: string;
   subtitle: string;
   href: string;
+  fullWidth?: boolean;
 }) {
   return (
     <Link
       href={href}
-      className="group relative block aspect-4/3 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-6 transition-all hover:border-neutral-300 hover:shadow-lg"
+      className={`group relative block overflow-hidden rounded-2xl border border-neutral-200 bg-white p-6 transition-all hover:border-neutral-300 hover:shadow-lg ${fullWidth ? 'aspect-3/1' : 'aspect-4/3'
+        }`}
     >
       {/* Decorative circle */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
