@@ -7,6 +7,7 @@ import { MovablePerson } from "./MovablePerson";
 
 interface BasicsSceneProps {
   personColor?: string | null;
+  walkSpeed?: number;
 }
 
 function LoadingFallback() {
@@ -36,7 +37,7 @@ function GroundPlane() {
   );
 }
 
-export function BasicsScene({ personColor }: BasicsSceneProps) {
+export function BasicsScene({ personColor, walkSpeed }: BasicsSceneProps) {
   return (
     <Canvas
       camera={{ position: [0, 2, 8], fov: 50 }}
@@ -72,7 +73,7 @@ export function BasicsScene({ personColor }: BasicsSceneProps) {
 
       {/* 3D Person Model with movement */}
       <Suspense fallback={<LoadingFallback />}>
-        <MovablePerson color={personColor} />
+        <MovablePerson color={personColor} walkSpeed={walkSpeed} />
       </Suspense>
 
       {/* Camera Controls */}

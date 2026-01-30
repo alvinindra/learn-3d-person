@@ -8,6 +8,7 @@ import { SkeletonUtils } from "three-stdlib";
 
 interface MovablePersonProps {
   color?: string | null;
+  walkSpeed?: number;
 }
 
 interface BoneData {
@@ -70,7 +71,7 @@ function Footstep({ position, rotation, onComplete }: { position: [number, numbe
   );
 }
 
-export function MovablePerson({ color }: MovablePersonProps) {
+export function MovablePerson({ color, walkSpeed = 3 }: MovablePersonProps) {
   const group = useRef<THREE.Group>(null);
   const { scene } = useGLTF("/person.glb");
 
@@ -232,7 +233,7 @@ export function MovablePerson({ color }: MovablePersonProps) {
   useFrame((state, delta) => {
     if (!group.current) return;
 
-    const speed = 3;
+    const speed = walkSpeed;
     const isMoving = movement.x !== 0 || movement.z !== 0;
     const bones = bonesRef.current;
     const anim = currentAnimRef.current;

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
@@ -20,6 +21,8 @@ const BasicsScene = dynamic(
 );
 
 export default function ThreeDBasicsPage() {
+  const [walkSpeed, setWalkSpeed] = useState(3);
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-white">
       {/* Subtle grid pattern */}
@@ -61,7 +64,7 @@ export default function ThreeDBasicsPage() {
         {/* 3D Canvas Container - Full Width */}
         <div className="relative h-[65vh] w-full">
           {/* 3D Scene */}
-          <BasicsScene />
+          <BasicsScene walkSpeed={walkSpeed} />
         </div>
 
         {/* Controls hint - Redesigned */}
@@ -89,6 +92,22 @@ export default function ThreeDBasicsPage() {
                 <path d="M12 8v8M8 12h8" />
               </svg>
               <span className="text-sm text-neutral-500">Scroll to zoom</span>
+            </div>
+            <div className="w-px h-5 bg-neutral-200" />
+            <div className="flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-400">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+              <input
+                type="range"
+                min="1"
+                max="8"
+                step="0.5"
+                value={walkSpeed}
+                onChange={(e) => setWalkSpeed(Number(e.target.value))}
+                className="w-20 h-1.5 bg-neutral-200 rounded-full appearance-none cursor-pointer accent-neutral-600"
+              />
+              <span className="text-sm text-neutral-500 min-w-[60px]">Speed {walkSpeed.toFixed(1)}</span>
             </div>
           </div>
         </div>
