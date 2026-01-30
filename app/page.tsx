@@ -1,37 +1,49 @@
 import Link from "next/link";
 
-const showcases = [
+const learningGroups = [
   {
-    id: "walking",
-    title: "WALKING",
-    subtitle: "Keep Moving",
-    href: "/walking",
+    month: "January",
+    title: "Setup 3D",
+    items: [
+      {
+        id: "walking",
+        title: "WALKING",
+        subtitle: "Keep Moving",
+        href: "/walking",
+      },
+      {
+        id: "flying",
+        title: "FLYING",
+        subtitle: "Touch the Sky",
+        href: "/flying",
+      },
+      {
+        id: "waving",
+        title: "WAVING",
+        subtitle: "Say Hello",
+        href: "/waving",
+      },
+      {
+        id: "jumping",
+        title: "JUMPING",
+        subtitle: "Scroll to Jump",
+        href: "/jumping",
+      },
+      {
+        id: "dancing",
+        title: "DANCING",
+        subtitle: "Rhythmic Groove",
+        href: "/dancing",
+      },
+    ],
   },
   {
-    id: "flying",
-    title: "FLYING",
-    subtitle: "Touch the Sky",
-    href: "/flying",
-  },
-  {
-    id: "waving",
-    title: "WAVING",
-    subtitle: "Say Hello",
-    href: "/waving",
-  },
-  {
-    id: "jumping",
-    title: "JUMPING",
-    subtitle: "Scroll to Jump",
-    href: "/jumping",
-  },
-  {
-    id: "dancing",
-    title: "DANCING",
-    subtitle: "Rhythmic Groove",
-    href: "/dancing",
+    month: "February",
+    title: "3D Basics",
+    items: [],
   },
 ];
+
 
 export default function Home() {
   return (
@@ -55,15 +67,39 @@ export default function Home() {
 
           {/* Stats Section */}
           <div className="flex gap-12 md:gap-20 opacity-80 pb-2">
-            <StatCard value={showcases.length.toString()} label="Showcases" />
-            <StatCard value="∞" label="Possibilities" />
+            <StatCard
+              value={learningGroups.reduce((acc, group) => acc + group.items.length, 0).toString()}
+              label="Total Items"
+            />
+            <StatCard value={learningGroups.length.toString()} label="Months" />
           </div>
         </div>
 
-        {/* Showcase Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {showcases.map((showcase) => (
-            <ShowcaseCard key={showcase.id} {...showcase} />
+        {/* Grouped Content */}
+        <div className="space-y-24">
+          {learningGroups.map((group) => (
+            <div key={`${group.month}-${group.title}`}>
+              <div className="mb-8 border-b border-neutral-100 pb-4">
+                <span className="text-[10px] font-bold tracking-[0.5em] text-neutral-300 uppercase block mb-2">
+                  {group.month}
+                </span>
+                <h2 className="text-3xl font-black tracking-tighter text-black uppercase">
+                  {group.title}
+                </h2>
+              </div>
+
+              {group.items.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {group.items.map((item) => (
+                    <ShowcaseCard key={item.id} {...item} />
+                  ))}
+                </div>
+              ) : (
+                <div className="h-48 rounded-2xl border-2 border-dashed border-neutral-100 flex flex-col items-center justify-center bg-neutral-50/30">
+                  <p className="text-neutral-400 text-sm font-medium italic">New content arriving soon...</p>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </main>
