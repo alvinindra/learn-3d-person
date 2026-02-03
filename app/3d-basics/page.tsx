@@ -3,6 +3,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { BookOpen } from "lucide-react";
 
 // Dynamically import Scene to avoid SSR issues with Three.js
 const BasicsScene = dynamic(
@@ -25,7 +26,14 @@ export default function ThreeDBasicsPage() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-white">
-      {/* Subtle grid pattern */}
+      {/* Learning Docs Link */}
+      <Link
+        href="/3d-basics/docs"
+        className="fixed left-6 bottom-6 z-50 flex items-center gap-2 rounded-full border border-neutral-200 bg-white/90 px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-lg backdrop-blur-sm transition-all hover:border-neutral-300 hover:bg-white hover:shadow-xl"
+      >
+        <BookOpen size={18} />
+        Dokumentasi
+      </Link>
       <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-size-[60px_60px]" />
 
       {/* Back button */}
