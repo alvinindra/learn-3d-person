@@ -1139,10 +1139,7 @@ function QuizSection({
       setShowResult(false);
     } else {
       setCompleted(true);
-      onComplete(
-        score + (selectedAnswer === question.correctIndex ? 1 : 0),
-        questions.length
-      );
+      onComplete(score, questions.length);
     }
   };
 
@@ -1155,8 +1152,7 @@ function QuizSection({
   };
 
   if (completed) {
-    const finalScore =
-      score + (selectedAnswer === question.correctIndex ? 1 : 0);
+    const finalScore = score;
     const percentage = Math.round((finalScore / questions.length) * 100);
 
     return (
@@ -1371,12 +1367,23 @@ export default function DocsPage() {
                           : "text-neutral-500 hover:text-neutral-700"
                           }`}
                       >
-                        <span>{sub.title}</span>
-                        {sub.quiz && (
-                          <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
-                            Quiz
-                          </span>
-                        )}
+                        <span className="truncate">{sub.title}</span>
+                        <div className="flex items-center gap-1">
+                          {sub.quiz && quizScores[`${index}-${subIndex}`] ? (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${quizScores[`${index}-${subIndex}`].score === quizScores[`${index}-${subIndex}`].total
+                              ? 'bg-green-100 text-green-700'
+                              : quizScores[`${index}-${subIndex}`].score >= quizScores[`${index}-${subIndex}`].total * 0.7
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-red-100 text-red-700'
+                              }`}>
+                              {quizScores[`${index}-${subIndex}`].score}/{quizScores[`${index}-${subIndex}`].total}
+                            </span>
+                          ) : sub.quiz ? (
+                            <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                              Quiz
+                            </span>
+                          ) : null}
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -1384,6 +1391,17 @@ export default function DocsPage() {
               </div>
             ))}
           </nav>
+
+          {/* Exam Button */}
+          <div className="mt-6 pt-4 border-t border-neutral-200">
+            <Link
+              href="/3d-basics/exam"
+              className="flex items-center justify-center gap-2 rounded-lg bg-neutral-900 px-4 py-3 text-sm text-white font-medium hover:bg-neutral-800 transition-colors"
+            >
+              <Trophy size={16} />
+              Mulai Ujian (40 Soal)
+            </Link>
+          </div>
         </aside>
 
         {/* Main Content */}
