@@ -19,20 +19,18 @@ export default function MiniGamePage() {
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [time, setTime] = useState(0);
-  const [highScore, setHighScore] = useState(0);
+  const [highScore, setHighScore] = useState(() => {
+    try {
+      const stored = localStorage.getItem("mg-hs");
+      return stored ? parseInt(stored, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
   const [hitFlash, setHitFlash] = useState(false);
 
   const scoreRef = useRef(0);
   const flashTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("mg-hs");
-      if (stored) setHighScore(parseInt(stored, 10));
-    } catch {
-      /* noop */
-    }
-  }, []);
 
   useEffect(() => {
     const handle = (e: KeyboardEvent) => {

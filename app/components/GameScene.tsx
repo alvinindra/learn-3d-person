@@ -27,8 +27,6 @@ interface GameState {
   phase: Phase;
   px: number;
   pz: number;
-  pAngle: number;
-  pMoving: boolean;
   keys: Set<string>;
   invulnUntil: number;
   startTime: number;
@@ -40,6 +38,16 @@ interface FootstepData {
   position: [number, number, number];
   rotation: number;
 }
+
+const GS: GameState = {
+  phase: "idle",
+  px: 0,
+  pz: 0,
+  keys: new Set(),
+  invulnUntil: 0,
+  startTime: 0,
+  lives: 3,
+};
 
 function randPos(margin = 2): number {
   return (Math.random() - 0.5) * 2 * (ARENA_HALF - margin);
@@ -59,7 +67,7 @@ function findClipName(names: string[], patterns: RegExp[]): string | null {
 
 // ─── Keyboard ────────────────────────────────────────
 
-function KeyboardInput({ gs }: { gs: React.MutableRefObject<GameState> }) {
+function KeyboardInput() {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
@@ -76,18 +84,17 @@ function KeyboardInput({ gs }: { gs: React.MutableRefObject<GameState> }) {
         ].includes(k)
       ) {
         e.preventDefault();
-        gs.current.keys.add(k);
+        GS.keys.add(k);
       }
     };
-    const up = (e: KeyboardEvent) =>
-      gs.current.keys.delete(e.key.toLowerCase());
+    const up = (e: KeyboardEvent) => GS.keys.delete(e.key.toLowerCase());
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     return () => {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  }, [gs]);
+  }, []);
   return null;
 }
 
@@ -211,7 +218,7 @@ function Arena() {
 
 // ─── Player ──────────────────────────────────────────
 
-function Player({ gs }: { gs: React.MutableRefObject<GameState> }) {
+function Player() {
   const groupRef = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF("/person.glb");
   const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
@@ -225,6 +232,7 @@ function Player({ gs }: { gs: React.MutableRefObject<GameState> }) {
   const smoothedTarget = useRef(new THREE.Vector3(0, 0.8, 0));
   const orbitOffset = useRef<THREE.Vector3 | null>(null);
   const walkPhase = useRef(0);
+  const targetAngle = useRef(0);
   const lastPhase = useRef<Phase>("idle");
   const [footsteps, setFootsteps] = useState<FootstepData[]>([]);
   const lastFoot = useRef<"left" | "right" | null>(null);
@@ -307,12 +315,12 @@ function Player({ gs }: { gs: React.MutableRefObject<GameState> }) {
 
   useFrame((state, dt) => {
     if (!groupRef.current) return;
-    const g = gs.current;
 
-    if (g.phase === "playing" && lastPhase.current !== "playing") {
+    if (GS.phase === "playing" && lastPhase.current !== "playing") {
       vel.current.set(0, 0, 0);
       walkPhase.current = 0;
       orbitOffset.current = null;
+      targetAngle.current = 0;
       const a = anim.current;
       a.legSwing = 0;
       a.leftArmSwing = 0;
@@ -322,19 +330,18 @@ function Player({ gs }: { gs: React.MutableRefObject<GameState> }) {
       setFootsteps([]);
       lastFoot.current = null;
     }
-    lastPhase.current = g.phase;
+    lastPhase.current = GS.phase;
 
     let inputX = 0,
       inputZ = 0;
-    if (g.phase === "playing") {
-      if (g.keys.has("w") || g.keys.has("arrowup")) inputZ = -1;
-      if (g.keys.has("s") || g.keys.has("arrowdown")) inputZ = 1;
-      if (g.keys.has("a") || g.keys.has("arrowleft")) inputX = -1;
-      if (g.keys.has("d") || g.keys.has("arrowright")) inputX = 1;
+    if (GS.phase === "playing") {
+      if (GS.keys.has("w") || GS.keys.has("arrowup")) inputZ = -1;
+      if (GS.keys.has("s") || GS.keys.has("arrowdown")) inputZ = 1;
+      if (GS.keys.has("a") || GS.keys.has("arrowleft")) inputX = -1;
+      if (GS.keys.has("d") || GS.keys.has("arrowright")) inputX = 1;
     }
 
     const isMoving = inputX !== 0 || inputZ !== 0;
-    g.pMoving = isMoving;
 
     const desiredVelocity = new THREE.Vector3();
     if (isMoving) {
@@ -354,23 +361,23 @@ function Player({ gs }: { gs: React.MutableRefObject<GameState> }) {
       if (moveDir.lengthSq() > 0) moveDir.normalize();
 
       desiredVelocity.copy(moveDir).multiplyScalar(PLAYER_SPEED);
-      g.pAngle = Math.atan2(moveDir.x, moveDir.z);
+      targetAngle.current = Math.atan2(moveDir.x, moveDir.z);
       walkPhase.current += dt * 6 * (PLAYER_SPEED / 3);
     }
 
     const moveLerp = 1 - Math.exp(-10 * dt);
     vel.current.lerp(desiredVelocity, moveLerp);
 
-    if (g.phase === "playing") {
-      g.px += vel.current.x * dt;
-      g.pz += vel.current.z * dt;
-      g.px = THREE.MathUtils.clamp(
-        g.px,
+    if (GS.phase === "playing") {
+      GS.px += vel.current.x * dt;
+      GS.pz += vel.current.z * dt;
+      GS.px = THREE.MathUtils.clamp(
+        GS.px,
         -ARENA_HALF + 0.5,
         ARENA_HALF - 0.5
       );
-      g.pz = THREE.MathUtils.clamp(
-        g.pz,
+      GS.pz = THREE.MathUtils.clamp(
+        GS.pz,
         -ARENA_HALF + 0.5,
         ARENA_HALF - 0.5
       );
@@ -412,7 +419,7 @@ function Player({ gs }: { gs: React.MutableRefObject<GameState> }) {
       const lookAhead = hVel.clone().multiplyScalar(0.4);
       if (lookAhead.length() > 0.9) lookAhead.setLength(0.9);
 
-      const desiredTarget = new THREE.Vector3(g.px, 0.8, g.pz).add(lookAhead);
+      const desiredTarget = new THREE.Vector3(GS.px, 0.8, GS.pz).add(lookAhead);
       const targetLerp = 1 - Math.exp(-7 * dt);
       smoothedTarget.current.lerp(desiredTarget, targetLerp);
       controlsTarget.copy(smoothedTarget.current);
@@ -425,16 +432,16 @@ function Player({ gs }: { gs: React.MutableRefObject<GameState> }) {
       controlsRef.current.update();
     }
 
-    groupRef.current.position.set(g.px, GROUND_Y, g.pz);
+    groupRef.current.position.set(GS.px, GROUND_Y, GS.pz);
 
-    let angleDiff = g.pAngle - groupRef.current.rotation.y;
+    let angleDiff = targetAngle.current - groupRef.current.rotation.y;
     while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
     while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
     groupRef.current.rotation.y += angleDiff * 0.15;
 
     const now = state.clock.elapsedTime;
     groupRef.current.visible =
-      g.invulnUntil > now ? Math.sin(now * 20) > 0 : true;
+      GS.invulnUntil > now ? Math.sin(now * 20) > 0 : true;
 
     const wp = walkPhase.current;
     const a = anim.current;
@@ -534,8 +541,8 @@ function Player({ gs }: { gs: React.MutableRefObject<GameState> }) {
         lastFoot.current = newFoot;
         const angle = groupRef.current.rotation.y;
         const sideOff = newFoot === "left" ? 0.2 : -0.2;
-        const footX = g.px + Math.cos(angle) * sideOff;
-        const footZ = g.pz - Math.sin(angle) * sideOff;
+        const footX = GS.px + Math.cos(angle) * sideOff;
+        const footZ = GS.pz - Math.sin(angle) * sideOff;
 
         setFootsteps((prev) =>
           [
@@ -638,27 +645,39 @@ function Coin({ x, z }: { x: number; z: number }) {
 
 function EnemyUnit({
   id,
-  gs,
-  posRef,
+  initialX,
+  initialZ,
+  posMap,
 }: {
   id: number;
-  gs: React.MutableRefObject<GameState>;
-  posRef: THREE.Vector3;
+  initialX: number;
+  initialZ: number;
+  posMap: React.MutableRefObject<Map<number, THREE.Vector3>>;
 }) {
   const ref = useRef<THREE.Group>(null);
-  const wanderDir = useRef(Math.random() * Math.PI * 2);
+  const pos = useRef(new THREE.Vector3(initialX, 0, initialZ));
+  const wanderDir = useRef(0);
   const wanderCD = useRef(0);
+
+  useEffect(() => {
+    wanderDir.current = Math.random() * Math.PI * 2;
+    const map = posMap.current;
+    map.set(id, pos.current);
+    return () => {
+      map.delete(id);
+    };
+  }, [id, posMap]);
 
   useFrame((state, dt) => {
     if (!ref.current) return;
-    const g = gs.current;
-    if (g.phase !== "playing") return;
+    if (GS.phase !== "playing") return;
 
-    const gameT = state.clock.elapsedTime - g.startTime;
+    const p = pos.current;
+    const gameT = state.clock.elapsedTime - GS.startTime;
     const speed = ENEMY_SPEED * (1 + gameT * 0.006);
 
-    const dx = g.px - posRef.x;
-    const dz = g.pz - posRef.z;
+    const dx = GS.px - p.x;
+    const dz = GS.pz - p.z;
     const dist = Math.hypot(dx, dz);
 
     let mx: number, mz: number;
@@ -675,20 +694,12 @@ function EnemyUnit({
       mz = Math.cos(wanderDir.current);
     }
 
-    posRef.x += mx * speed * dt;
-    posRef.z += mz * speed * dt;
-    posRef.x = THREE.MathUtils.clamp(
-      posRef.x,
-      -ARENA_HALF + 0.5,
-      ARENA_HALF - 0.5
-    );
-    posRef.z = THREE.MathUtils.clamp(
-      posRef.z,
-      -ARENA_HALF + 0.5,
-      ARENA_HALF - 0.5
-    );
+    p.x += mx * speed * dt;
+    p.z += mz * speed * dt;
+    p.x = THREE.MathUtils.clamp(p.x, -ARENA_HALF + 0.5, ARENA_HALF - 0.5);
+    p.z = THREE.MathUtils.clamp(p.z, -ARENA_HALF + 0.5, ARENA_HALF - 0.5);
 
-    ref.current.position.set(posRef.x, GROUND_Y, posRef.z);
+    ref.current.position.set(p.x, GROUND_Y, p.z);
     ref.current.rotation.y = Math.atan2(mx, mz);
 
     const pulse =
@@ -697,7 +708,7 @@ function EnemyUnit({
   });
 
   return (
-    <group ref={ref} position={[posRef.x, GROUND_Y, posRef.z]}>
+    <group ref={ref} position={[initialX, GROUND_Y, initialZ]}>
       <mesh position={[0, 0.65, 0]} castShadow>
         <capsuleGeometry args={[0.28, 0.7, 4, 12]} />
         <meshStandardMaterial
@@ -739,22 +750,12 @@ function GameWorld({
   onTick: (s: number) => void;
   onDead: () => void;
 }) {
-  const gs = useRef<GameState>({
-    phase: gamePhase,
-    px: 0,
-    pz: 0,
-    pAngle: 0,
-    pMoving: false,
-    keys: new Set(),
-    invulnUntil: 0,
-    startTime: 0,
-    lives: 3,
-  });
-
   const [coins, setCoins] = useState<{ id: number; x: number; z: number }[]>(
     []
   );
-  const [enemies, setEnemies] = useState<{ id: number }[]>([]);
+  const [enemies, setEnemies] = useState<
+    { id: number; sx: number; sz: number }[]
+  >([]);
   const enemyPos = useRef(new Map<number, THREE.Vector3>());
   const nextId = useRef(0);
   const lastCoinT = useRef(0);
@@ -762,51 +763,62 @@ function GameWorld({
   const lastTick = useRef(-1);
 
   const coinsRef = useRef(coins);
-  coinsRef.current = coins;
   const enemiesRef = useRef(enemies);
-  enemiesRef.current = enemies;
-
   const onCollectRef = useRef(onCollect);
-  onCollectRef.current = onCollect;
   const onDamageRef = useRef(onDamage);
-  onDamageRef.current = onDamage;
   const onTickRef = useRef(onTick);
-  onTickRef.current = onTick;
   const onDeadRef = useRef(onDead);
-  onDeadRef.current = onDead;
 
   useEffect(() => {
-    gs.current.phase = gamePhase;
+    coinsRef.current = coins;
+  }, [coins]);
+  useEffect(() => {
+    enemiesRef.current = enemies;
+  }, [enemies]);
+  useEffect(() => {
+    onCollectRef.current = onCollect;
+    onDamageRef.current = onDamage;
+    onTickRef.current = onTick;
+    onDeadRef.current = onDead;
+  }, [onCollect, onDamage, onTick, onDead]);
+
+  const needsReset = useRef(false);
+
+  useEffect(() => {
+    GS.phase = gamePhase;
     if (gamePhase === "playing") {
-      gs.current.px = 0;
-      gs.current.pz = 0;
-      gs.current.pAngle = 0;
-      gs.current.lives = 3;
-      gs.current.invulnUntil = 0;
-      gs.current.startTime = -1;
+      GS.px = 0;
+      GS.pz = 0;
+      GS.lives = 3;
+      GS.invulnUntil = 0;
+      GS.startTime = -1;
       lastCoinT.current = 0;
       lastEnemyT.current = 0;
       lastTick.current = -1;
       nextId.current = 0;
-      setCoins([]);
-      setEnemies([]);
-      enemyPos.current.clear();
+      needsReset.current = true;
     }
   }, [gamePhase]);
 
   useFrame((state) => {
-    const g = gs.current;
-    if (g.phase !== "playing") return;
+    if (needsReset.current) {
+      needsReset.current = false;
+      setCoins([]);
+      setEnemies([]);
+      enemyPos.current.clear();
+    }
+
+    if (GS.phase !== "playing") return;
 
     const now = state.clock.elapsedTime;
 
-    if (g.startTime < 0) {
-      g.startTime = now;
+    if (GS.startTime < 0) {
+      GS.startTime = now;
       lastCoinT.current = now - COIN_INTERVAL + 0.5;
       lastEnemyT.current = now;
     }
 
-    const gameTime = now - g.startTime;
+    const gameTime = now - GS.startTime;
     const tick = Math.floor(gameTime);
     if (tick !== lastTick.current) {
       lastTick.current = tick;
@@ -824,7 +836,7 @@ function GameWorld({
         cx = randPos();
         cz = randPos();
         attempts++;
-      } while (dist2D(g.px, g.pz, cx, cz) < 3 && attempts < 10);
+      } while (dist2D(GS.px, GS.pz, cx, cz) < 3 && attempts < 10);
 
       const cid = nextId.current++;
       setCoins((prev) => [...prev, { id: cid, x: cx, z: cz }]);
@@ -853,13 +865,12 @@ function GameWorld({
         sx = ARENA_HALF - 1;
         sz = randPos();
       }
-      enemyPos.current.set(eid, new THREE.Vector3(sx, 0, sz));
-      setEnemies((prev) => [...prev, { id: eid }]);
+      setEnemies((prev) => [...prev, { id: eid, sx, sz }]);
     }
 
     const collected: number[] = [];
     for (const c of coinsRef.current) {
-      if (dist2D(g.px, g.pz, c.x, c.z) < COLLECT_DIST) {
+      if (dist2D(GS.px, GS.pz, c.x, c.z) < COLLECT_DIST) {
         collected.push(c.id);
       }
     }
@@ -868,15 +879,15 @@ function GameWorld({
       for (let i = 0; i < collected.length; i++) onCollectRef.current();
     }
 
-    if (g.invulnUntil < now) {
+    if (GS.invulnUntil < now) {
       for (const e of enemiesRef.current) {
         const ep = enemyPos.current.get(e.id);
-        if (ep && dist2D(g.px, g.pz, ep.x, ep.z) < HIT_DIST) {
-          g.invulnUntil = now + INVULN_SECS;
-          g.lives--;
+        if (ep && dist2D(GS.px, GS.pz, ep.x, ep.z) < HIT_DIST) {
+          GS.invulnUntil = now + INVULN_SECS;
+          GS.lives--;
           onDamageRef.current();
-          if (g.lives <= 0) {
-            g.phase = "over";
+          if (GS.lives <= 0) {
+            GS.phase = "over";
             onDeadRef.current();
           }
           break;
@@ -887,7 +898,7 @@ function GameWorld({
 
   return (
     <>
-      <KeyboardInput gs={gs} />
+      <KeyboardInput />
 
       <fog attach="fog" args={["#050505", 20, 38]} />
       <ambientLight intensity={0.4} />
@@ -908,19 +919,22 @@ function GameWorld({
       <Arena />
 
       <Suspense fallback={null}>
-        <Player gs={gs} />
+        <Player />
       </Suspense>
 
       {coins.map((c) => (
         <Coin key={c.id} x={c.x} z={c.z} />
       ))}
 
-      {enemies.map((e) => {
-        const pos = enemyPos.current.get(e.id);
-        return pos ? (
-          <EnemyUnit key={e.id} id={e.id} gs={gs} posRef={pos} />
-        ) : null;
-      })}
+      {enemies.map((e) => (
+        <EnemyUnit
+          key={e.id}
+          id={e.id}
+          initialX={e.sx}
+          initialZ={e.sz}
+          posMap={enemyPos}
+        />
+      ))}
     </>
   );
 }
