@@ -2,7 +2,6 @@
 
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
-import { OrbitControls } from "@react-three/drei";
 import { MovablePerson } from "./MovablePerson";
 
 interface BasicsSceneProps {
@@ -75,15 +74,6 @@ export function BasicsScene({ personColor, walkSpeed }: BasicsSceneProps) {
       <Suspense fallback={<LoadingFallback />}>
         <MovablePerson color={personColor} walkSpeed={walkSpeed} />
       </Suspense>
-
-      {/* Camera Controls */}
-      <OrbitControls
-        enablePan={false}
-        enableZoom={true}
-        enableRotate={false}
-        minDistance={3}
-        maxDistance={15}
-      />
     </Canvas>
   );
 }

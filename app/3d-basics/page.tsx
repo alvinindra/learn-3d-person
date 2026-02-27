@@ -22,7 +22,7 @@ const BasicsScene = dynamic(
 );
 
 export default function ThreeDBasicsPage() {
-  const [walkSpeed, setWalkSpeed] = useState(3);
+  const [walkSpeed, setWalkSpeed] = useState(4);
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-white">
@@ -100,6 +100,15 @@ export default function ThreeDBasicsPage() {
                 <path d="M12 8v8M8 12h8" />
               </svg>
               <span className="text-sm text-neutral-500">Scroll to zoom</span>
+            </div>
+            <div className="w-px h-5 bg-neutral-200" />
+            <div className="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-400">
+                <path d="M5 15l7-7 7 7" />
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+              <span className="text-sm text-neutral-500">Drag to rotate</span>
             </div>
             <div className="w-px h-5 bg-neutral-200" />
             <div className="flex items-center gap-3">
