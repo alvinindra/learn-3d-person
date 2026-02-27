@@ -47,6 +47,12 @@ const learningGroups = [
         subtitle: "Master the Fundamentals",
         href: "/3d-basics",
       },
+      {
+        id: "mini-game",
+        title: "MINI GAME",
+        subtitle: "Collect & Survive",
+        href: "/mini-game",
+      },
     ],
   },
 ];
