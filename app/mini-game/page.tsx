@@ -23,7 +23,7 @@ export default function MiniGamePage() {
   const [hitFlash, setHitFlash] = useState(false);
 
   const scoreRef = useRef(0);
-  const flashTimer = useRef<ReturnType<typeof setTimeout>>();
+  const flashTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     try {
